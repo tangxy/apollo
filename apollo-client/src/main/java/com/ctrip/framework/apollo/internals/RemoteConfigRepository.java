@@ -226,7 +226,7 @@ public class RemoteConfigRepository extends AbstractConfigRepository {
 
           ApolloConfig result = response.getBody();
 
-          logger.debug("Loaded config for {}: {}", m_namespace, result);
+          logger.info("Loaded config for {}: {}", m_namespace, result);
 
           return result;
         } catch (ApolloConfigStatusCodeException ex) {
