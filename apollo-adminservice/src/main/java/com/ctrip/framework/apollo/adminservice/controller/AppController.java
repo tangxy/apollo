@@ -1,13 +1,8 @@
 package com.ctrip.framework.apollo.adminservice.controller;
 
-import com.ctrip.framework.apollo.biz.service.AdminService;
-import com.ctrip.framework.apollo.biz.service.AppService;
-import com.ctrip.framework.apollo.common.dto.AppDTO;
-import com.ctrip.framework.apollo.common.entity.App;
-import com.ctrip.framework.apollo.common.exception.BadRequestException;
-import com.ctrip.framework.apollo.common.exception.NotFoundException;
-import com.ctrip.framework.apollo.common.utils.BeanUtils;
-import com.ctrip.framework.apollo.core.utils.StringUtils;
+import java.util.List;
+import java.util.Objects;
+import javax.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,10 +12,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Objects;
+import com.ctrip.framework.apollo.biz.service.AdminService;
+import com.ctrip.framework.apollo.biz.service.AppService;
+import com.ctrip.framework.apollo.common.dto.AppDTO;
+import com.ctrip.framework.apollo.common.entity.App;
+import com.ctrip.framework.apollo.common.exception.BadRequestException;
+import com.ctrip.framework.apollo.common.exception.NotFoundException;
+import com.ctrip.framework.apollo.common.utils.BeanUtils;
+import com.ctrip.framework.apollo.core.utils.SecurityUtil;
+import com.ctrip.framework.apollo.core.utils.StringUtils;
 
 @RestController
 public class AppController {
@@ -40,7 +40,9 @@ public class AppController {
     if (managedEntity != null) {
       throw new BadRequestException("app already exist.");
     }
-
+    String[] rsaKeyStrings = SecurityUtil.genKeyPair();
+    entity.setPrivateKey(rsaKeyStrings[0]);
+    entity.setPublicKey(rsaKeyStrings[1]);
     entity = adminService.createNewApp(entity);
 
     return BeanUtils.transform(AppDTO.class, entity);
@@ -66,7 +68,7 @@ public class AppController {
 
   @GetMapping("/apps")
   public List<AppDTO> find(@RequestParam(value = "name", required = false) String name,
-                           Pageable pageable) {
+      Pageable pageable) {
     List<App> app = null;
     if (StringUtils.isBlank(name)) {
       app = appService.findAll(pageable);

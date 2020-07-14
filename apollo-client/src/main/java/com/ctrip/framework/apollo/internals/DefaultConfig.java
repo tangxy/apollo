@@ -1,6 +1,5 @@
 package com.ctrip.framework.apollo.internals;
 
-import com.ctrip.framework.apollo.enums.ConfigSourceType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -11,11 +10,10 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.ctrip.framework.apollo.core.utils.ClassLoaderUtil;
+import com.ctrip.framework.apollo.enums.ConfigSourceType;
 import com.ctrip.framework.apollo.enums.PropertyChangeType;
 import com.ctrip.framework.apollo.model.ConfigChange;
 import com.ctrip.framework.apollo.model.ConfigChangeEvent;
@@ -35,13 +33,13 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
   private final AtomicReference<Properties> m_configProperties;
   private final ConfigRepository m_configRepository;
   private final RateLimiter m_warnLogRateLimiter;
-
+  private final DecryptWrapper m_decryptWrapper;
   private volatile ConfigSourceType m_sourceType = ConfigSourceType.NONE;
 
   /**
    * Constructor.
    *
-   * @param namespace        the namespace of this config instance
+   * @param namespace the namespace of this config instance
    * @param configRepository the config repository for this config instance
    */
   public DefaultConfig(String namespace, ConfigRepository configRepository) {
@@ -50,6 +48,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     m_configRepository = configRepository;
     m_configProperties = new AtomicReference<>();
     m_warnLogRateLimiter = RateLimiter.create(0.017); // 1 warning log output per minute
+    m_decryptWrapper = new DecryptWrapper();
     initialize();
   }
 
@@ -58,11 +57,11 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
       updateConfig(m_configRepository.getConfig(), m_configRepository.getSourceType());
     } catch (Throwable ex) {
       Tracer.logError(ex);
-      logger.warn("Init Apollo Local Config failed - namespace: {}, reason: {}.",
-          m_namespace, ExceptionUtil.getDetailMessage(ex));
+      logger.warn("Init Apollo Local Config failed - namespace: {}, reason: {}.", m_namespace,
+          ExceptionUtil.getDetailMessage(ex));
     } finally {
-      //register the change listener no matter config repository is working or not
-      //so that whenever config repository is recovered, config could get changed
+      // register the change listener no matter config repository is working or not
+      // so that whenever config repository is recovered, config could get changed
       m_configRepository.addChangeListener(this);
     }
   }
@@ -78,9 +77,9 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     }
 
     /**
-     * step 3: check env variable, i.e. PATH=...
-     * normally system environment variables are in UPPERCASE, however there might be exceptions.
-     * so the caller should provide the key in the right case
+     * step 3: check env variable, i.e. PATH=... normally system environment variables are in
+     * UPPERCASE, however there might be exceptions. so the caller should provide the key in the
+     * right case
      */
     if (value == null) {
       value = System.getenv(key);
@@ -92,7 +91,9 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     }
 
     if (value == null && m_configProperties.get() == null && m_warnLogRateLimiter.tryAcquire()) {
-      logger.warn("Could not load config for namespace {} from Apollo, please check whether the configs are released in Apollo! Return default value now!", m_namespace);
+      logger.warn(
+          "Could not load config for namespace {} from Apollo, please check whether the configs are released in Apollo! Return default value now!",
+          m_namespace);
     }
 
     return value == null ? defaultValue : value;
@@ -114,7 +115,8 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
   }
 
   private Set<String> stringPropertyNames(Properties properties) {
-    //jdk9以下版本Properties#enumerateStringProperties方法存在性能问题，keys() + get(k) 重复迭代, jdk9之后改为entrySet遍历.
+    // jdk9以下版本Properties#enumerateStringProperties方法存在性能问题，keys() + get(k) 重复迭代,
+    // jdk9之后改为entrySet遍历.
     Map<String, String> h = new LinkedHashMap<>();
     for (Map.Entry<Object, Object> e : properties.entrySet()) {
       Object k = e.getKey();
@@ -136,9 +138,10 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     Properties newConfigProperties = propertiesFactory.getPropertiesInstance();
     newConfigProperties.putAll(newProperties);
 
-    Map<String, ConfigChange> actualChanges = updateAndCalcConfigChanges(newConfigProperties, sourceType);
+    Map<String, ConfigChange> actualChanges =
+        updateAndCalcConfigChanges(newConfigProperties, sourceType);
 
-    //check double checked result
+    // check double checked result
     if (actualChanges.isEmpty()) {
       return;
     }
@@ -149,6 +152,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
   }
 
   private void updateConfig(Properties newConfigProperties, ConfigSourceType sourceType) {
+    m_decryptWrapper.processEncryptedValue(newConfigProperties);
     m_configProperties.set(newConfigProperties);
     m_sourceType = sourceType;
   }
@@ -158,21 +162,20 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
     List<ConfigChange> configChanges =
         calcPropertyChanges(m_namespace, m_configProperties.get(), newConfigProperties);
 
-    ImmutableMap.Builder<String, ConfigChange> actualChanges =
-        new ImmutableMap.Builder<>();
+    ImmutableMap.Builder<String, ConfigChange> actualChanges = new ImmutableMap.Builder<>();
 
     /** === Double check since DefaultConfig has multiple config sources ==== **/
 
-    //1. use getProperty to update configChanges's old value
+    // 1. use getProperty to update configChanges's old value
     for (ConfigChange change : configChanges) {
       change.setOldValue(this.getProperty(change.getPropertyName(), change.getOldValue()));
     }
 
-    //2. update m_configProperties
+    // 2. update m_configProperties
     updateConfig(newConfigProperties, sourceType);
     clearConfigCache();
 
-    //3. use getProperty to update configChange's new value and calc the final changes
+    // 3. use getProperty to update configChange's new value and calc the final changes
     for (ConfigChange change : configChanges) {
       change.setNewValue(this.getProperty(change.getPropertyName(), change.getNewValue()));
       switch (change.getChangeType()) {
@@ -200,7 +203,7 @@ public class DefaultConfig extends AbstractConfig implements RepositoryChangeLis
           actualChanges.put(change.getPropertyName(), change);
           break;
         default:
-          //do nothing
+          // do nothing
           break;
       }
     }

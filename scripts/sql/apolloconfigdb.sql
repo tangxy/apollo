@@ -8,9 +8,9 @@
 
 # Create Database
 # ------------------------------------------------------------
-CREATE DATABASE IF NOT EXISTS ApolloConfigDB DEFAULT CHARACTER SET = utf8mb4;
+CREATE DATABASE IF NOT EXISTS db_apollo_config DEFAULT CHARACTER SET = utf8mb4;
 
-Use ApolloConfigDB;
+Use db_apollo_config;
 
 # Dump of table app
 # ------------------------------------------------------------

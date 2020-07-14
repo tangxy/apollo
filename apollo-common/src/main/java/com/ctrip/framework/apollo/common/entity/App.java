@@ -1,14 +1,13 @@
 package com.ctrip.framework.apollo.common.entity;
 
-import com.ctrip.framework.apollo.common.utils.InputValidator;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import com.ctrip.framework.apollo.common.utils.InputValidator;
 
 @Entity
 @Table(name = "App")
@@ -21,10 +20,8 @@ public class App extends BaseEntity {
   private String name;
 
   @NotBlank(message = "AppId cannot be blank")
-  @Pattern(
-      regexp = InputValidator.CLUSTER_NAMESPACE_VALIDATOR,
-      message = InputValidator.INVALID_CLUSTER_NAMESPACE_MESSAGE
-  )
+  @Pattern(regexp = InputValidator.CLUSTER_NAMESPACE_VALIDATOR,
+      message = InputValidator.INVALID_CLUSTER_NAMESPACE_MESSAGE)
   @Column(name = "AppId", nullable = false)
   private String appId;
 
@@ -41,6 +38,12 @@ public class App extends BaseEntity {
   @NotBlank(message = "OwnerEmail cannot be blank")
   @Column(name = "OwnerEmail", nullable = false)
   private String ownerEmail;
+
+  @Column(name = "PrivateKey", nullable = false)
+  private String privateKey;
+
+  @Column(name = "PublicKey", nullable = false)
+  private String publicKey;
 
   public String getAppId() {
     return appId;
@@ -90,18 +93,32 @@ public class App extends BaseEntity {
     this.ownerName = ownerName;
   }
 
+  public String getPrivateKey() {
+    return privateKey;
+  }
+
+  public void setPrivateKey(String privateKey) {
+    this.privateKey = privateKey;
+  }
+
+  public String getPublicKey() {
+    return publicKey;
+  }
+
+  public void setPublicKey(String publicKey) {
+    this.publicKey = publicKey;
+  }
+
+  @Override
   public String toString() {
-    return toStringHelper().add("name", name).add("appId", appId)
-        .add("orgId", orgId)
-        .add("orgName", orgName)
-        .add("ownerName", ownerName)
-        .add("ownerEmail", ownerEmail).toString();
+    return toStringHelper().add("name", name).add("appId", appId).add("orgId", orgId)
+        .add("orgName", orgName).add("ownerName", ownerName).add("ownerEmail", ownerEmail)
+        .add("privateKey", privateKey).add("publicKey", publicKey).toString();
   }
 
   public static class Builder {
 
-    public Builder() {
-    }
+    public Builder() {}
 
     private App app = new App();
 
@@ -132,6 +149,16 @@ public class App extends BaseEntity {
 
     public Builder ownerEmail(String ownerEmail) {
       app.setOwnerEmail(ownerEmail);
+      return this;
+    }
+
+    public Builder privateKey(String privateKey) {
+      app.setOwnerEmail(privateKey);
+      return this;
+    }
+
+    public Builder publicKey(String publicKey) {
+      app.setOwnerEmail(publicKey);
       return this;
     }
 
