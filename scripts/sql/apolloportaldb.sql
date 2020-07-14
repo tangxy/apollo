@@ -8,9 +8,9 @@
 
 # Create Database
 # ------------------------------------------------------------
-CREATE DATABASE IF NOT EXISTS db_apollo_portal DEFAULT CHARACTER SET = utf8mb4;
+CREATE DATABASE IF NOT EXISTS ApolloPortalDB DEFAULT CHARACTER SET = utf8mb4;
 
-Use db_apollo_portal;
+Use ApolloPortalDB;
 
 # Dump of table app
 # ------------------------------------------------------------
@@ -30,6 +30,8 @@ CREATE TABLE `App` (
   `DataChange_CreatedTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `DataChange_LastModifiedBy` varchar(32) DEFAULT '' COMMENT '最后修改人邮箱前缀',
   `DataChange_LastTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
+  `PrivateKey` VARCHAR(2048) NULL DEFAULT NULL COMMENT 'APP RSA私钥',
+  `PublicKey` VARCHAR(2048) NULL DEFAULT NULL COMMENT 'APP RSA公钥',
   PRIMARY KEY (`Id`),
   KEY `AppId` (`AppId`(191)),
   KEY `DataChange_LastTime` (`DataChange_LastTime`),
