@@ -37,7 +37,9 @@ function itemModalDirective($translate, toastr, $sce, AppUtil, EventManager, Con
                 if (!scope.item.value) {
                     scope.item.value = "";
                 }
-
+				if (!scope.item.encrypt) {
+                    scope.item.encrypt = false;
+                }
                 if (scope.item.tableViewOperType == TABLE_VIEW_OPER_TYPE.CREATE) {
 
                     //check key unique
@@ -59,6 +61,7 @@ function itemModalDirective($translate, toastr, $sce, AppUtil, EventManager, Con
                             scope.env,
                             scope.toOperationNamespace.baseInfo.clusterName,
                             scope.toOperationNamespace.baseInfo.namespaceName,
+                            scope.item.encrypt,
                             scope.item).then(
                                 function (result) {
                                     toastr.success($translate.instant('ItemModal.AddedTips'));
@@ -85,6 +88,7 @@ function itemModalDirective($translate, toastr, $sce, AppUtil, EventManager, Con
                                 cluster.env,
                                 cluster.name,
                                 scope.toOperationNamespace.baseInfo.namespaceName,
+                                scope.item.encrypt,
                                 scope.item).then(
                                     function (result) {
                                         scope.item.addItemBtnDisabled = false;
@@ -115,6 +119,7 @@ function itemModalDirective($translate, toastr, $sce, AppUtil, EventManager, Con
                         scope.env,
                         scope.toOperationNamespace.baseInfo.clusterName,
                         scope.toOperationNamespace.baseInfo.namespaceName,
+                        scope.item.encrypt,
                         scope.item).then(
                             function (result) {
                                 EventManager.emit(EventManager.EventType.REFRESH_NAMESPACE,

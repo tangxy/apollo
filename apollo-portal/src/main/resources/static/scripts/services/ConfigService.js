@@ -36,11 +36,11 @@ appService.service("ConfigService", ['$resource', '$q', 'AppUtil', function ($re
         },
         create_item: {
             method: 'POST',
-            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/item'
+            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/encrypt/:encrypt/item'
         },
         update_item: {
             method: 'PUT',
-            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/item'
+            url: AppUtil.prefixPath() + '/apps/:appId/envs/:env/clusters/:clusterName/namespaces/:namespaceName/encrypt/:encrypt/item'
         },
         delete_item: {
             method: 'DELETE',
@@ -153,13 +153,14 @@ appService.service("ConfigService", ['$resource', '$q', 'AppUtil', function ($re
             return d.promise;
         },
 
-        create_item: function (appId, env, clusterName, namespaceName, item) {
+        create_item: function (appId, env, clusterName, namespaceName,encrypt, item) {
             var d = $q.defer();
             config_source.create_item({
                                           appId: appId,
                                           env: env,
                                           clusterName: clusterName,
-                                          namespaceName: namespaceName
+                                          namespaceName: namespaceName,
+                                          encrypt: encrypt
                                       }, item, function (result) {
                 d.resolve(result);
             }, function (result) {
@@ -168,13 +169,14 @@ appService.service("ConfigService", ['$resource', '$q', 'AppUtil', function ($re
             return d.promise;
         },
 
-        update_item: function (appId, env, clusterName, namespaceName, item) {
+        update_item: function (appId, env, clusterName, namespaceName,encrypt, item) {
             var d = $q.defer();
             config_source.update_item({
                                           appId: appId,
                                           env: env,
                                           clusterName: clusterName,
-                                          namespaceName: namespaceName
+                                          namespaceName: namespaceName,
+                                          encrypt: encrypt
                                       }, item, function (result) {
                 d.resolve(result);
             }, function (result) {

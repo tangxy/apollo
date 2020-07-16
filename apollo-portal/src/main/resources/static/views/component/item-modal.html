@@ -44,6 +44,12 @@
 
                 </div>
                 <div class="form-group">
+                    <label class="col-sm-2 control-label">{{'Component.ConfigItem.ItemEncrypt' | translate }}</label>
+                    <div class="col-sm-10" valdr-form-group>
+                        <input class="form-control" type="checkbox" name="encrypt" ng-model="item.encrypt">
+                    </div>
+                </div>
+                <div class="form-group">
                     <label class="col-sm-2 control-label">{{'Component.ConfigItem.ItemComment' | translate }}</label>
                     <div class="col-sm-10" valdr-form-group>
                         <textarea class="form-control" name="comment" ng-model="item.comment" tabindex="3" rows="2">

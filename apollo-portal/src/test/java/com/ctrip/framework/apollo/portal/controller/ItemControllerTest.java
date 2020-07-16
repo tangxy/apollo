@@ -1,13 +1,5 @@
 package com.ctrip.framework.apollo.portal.controller;
 
-import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
-import com.ctrip.framework.apollo.portal.component.PermissionValidator;
-import com.ctrip.framework.apollo.portal.entity.model.NamespaceTextModel;
-import com.ctrip.framework.apollo.portal.service.ItemService;
-import com.ctrip.framework.apollo.portal.service.NamespaceService;
-import com.ctrip.framework.apollo.portal.spi.UserInfoHolder;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import org.junit.Before;
@@ -17,10 +9,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.yaml.snakeyaml.constructor.ConstructorException;
+import com.ctrip.framework.apollo.core.enums.ConfigFileFormat;
+import com.ctrip.framework.apollo.portal.component.PermissionValidator;
+import com.ctrip.framework.apollo.portal.entity.model.NamespaceTextModel;
+import com.ctrip.framework.apollo.portal.service.AppService;
+import com.ctrip.framework.apollo.portal.service.ItemService;
+import com.ctrip.framework.apollo.portal.service.NamespaceService;
+import com.ctrip.framework.apollo.portal.spi.UserInfoHolder;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ItemControllerTest {
-
+  @Mock
+  private AppService appService;
   @Mock
   private ItemService configService;
   @Mock
@@ -35,8 +37,8 @@ public class ItemControllerTest {
 
   @Before
   public void setUp() throws Exception {
-    itemController = new ItemController(configService, userInfoHolder, permissionValidator,
-        namespaceService);
+    itemController = new ItemController(appService, configService, userInfoHolder,
+        permissionValidator, namespaceService);
   }
 
   @Test

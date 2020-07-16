@@ -1,9 +1,5 @@
 package com.ctrip.framework.apollo.adminservice.controller;
 
-import com.ctrip.framework.apollo.biz.entity.AccessKey;
-import com.ctrip.framework.apollo.biz.service.AccessKeyService;
-import com.ctrip.framework.apollo.common.dto.AccessKeyDTO;
-import com.ctrip.framework.apollo.common.utils.BeanUtils;
 import java.util.List;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import com.ctrip.framework.apollo.biz.entity.AccessKey;
+import com.ctrip.framework.apollo.biz.service.AccessKeyService;
+import com.ctrip.framework.apollo.common.dto.AccessKeyDTO;
+import com.ctrip.framework.apollo.common.utils.BeanUtils;
 
 /**
  * @author nisiyong
@@ -21,8 +21,7 @@ public class AccessKeyController {
 
   private final AccessKeyService accessKeyService;
 
-  public AccessKeyController(
-      AccessKeyService accessKeyService) {
+  public AccessKeyController(AccessKeyService accessKeyService) {
     this.accessKeyService = accessKeyService;
   }
 

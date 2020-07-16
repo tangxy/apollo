@@ -1,17 +1,5 @@
 package com.ctrip.framework.apollo.adminservice.controller;
 
-import com.ctrip.framework.apollo.adminservice.aop.PreAcquireNamespaceLock;
-import com.ctrip.framework.apollo.biz.entity.Commit;
-import com.ctrip.framework.apollo.biz.entity.Item;
-import com.ctrip.framework.apollo.biz.entity.Namespace;
-import com.ctrip.framework.apollo.biz.service.CommitService;
-import com.ctrip.framework.apollo.biz.service.ItemService;
-import com.ctrip.framework.apollo.biz.service.NamespaceService;
-import com.ctrip.framework.apollo.biz.utils.ConfigChangeContentBuilder;
-import com.ctrip.framework.apollo.common.dto.ItemDTO;
-import com.ctrip.framework.apollo.common.exception.BadRequestException;
-import com.ctrip.framework.apollo.common.exception.NotFoundException;
-import com.ctrip.framework.apollo.common.utils.BeanUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +13,18 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.ctrip.framework.apollo.adminservice.aop.PreAcquireNamespaceLock;
+import com.ctrip.framework.apollo.biz.entity.Commit;
+import com.ctrip.framework.apollo.biz.entity.Item;
+import com.ctrip.framework.apollo.biz.entity.Namespace;
+import com.ctrip.framework.apollo.biz.service.CommitService;
+import com.ctrip.framework.apollo.biz.service.ItemService;
+import com.ctrip.framework.apollo.biz.service.NamespaceService;
+import com.ctrip.framework.apollo.biz.utils.ConfigChangeContentBuilder;
+import com.ctrip.framework.apollo.common.dto.ItemDTO;
+import com.ctrip.framework.apollo.common.exception.BadRequestException;
+import com.ctrip.framework.apollo.common.exception.NotFoundException;
+import com.ctrip.framework.apollo.common.utils.BeanUtils;
 
 @RestController
 public class ItemController {
@@ -33,7 +33,8 @@ public class ItemController {
   private final NamespaceService namespaceService;
   private final CommitService commitService;
 
-  public ItemController(final ItemService itemService, final NamespaceService namespaceService, final CommitService commitService) {
+  public ItemController(final ItemService itemService, final NamespaceService namespaceService,
+      final CommitService commitService) {
     this.itemService = itemService;
     this.namespaceService = namespaceService;
     this.commitService = commitService;
@@ -42,8 +43,8 @@ public class ItemController {
   @PreAcquireNamespaceLock
   @PostMapping("/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/items")
   public ItemDTO create(@PathVariable("appId") String appId,
-                        @PathVariable("clusterName") String clusterName,
-                        @PathVariable("namespaceName") String namespaceName, @RequestBody ItemDTO dto) {
+      @PathVariable("clusterName") String clusterName,
+      @PathVariable("namespaceName") String namespaceName, @RequestBody ItemDTO dto) {
     Item entity = BeanUtils.transform(Item.class, dto);
 
     ConfigChangeContentBuilder builder = new ConfigChangeContentBuilder();
@@ -70,10 +71,9 @@ public class ItemController {
   @PreAcquireNamespaceLock
   @PutMapping("/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/items/{itemId}")
   public ItemDTO update(@PathVariable("appId") String appId,
-                        @PathVariable("clusterName") String clusterName,
-                        @PathVariable("namespaceName") String namespaceName,
-                        @PathVariable("itemId") long itemId,
-                        @RequestBody ItemDTO itemDTO) {
+      @PathVariable("clusterName") String clusterName,
+      @PathVariable("namespaceName") String namespaceName, @PathVariable("itemId") long itemId,
+      @RequestBody ItemDTO itemDTO) {
 
     Item entity = BeanUtils.transform(Item.class, itemDTO);
 
@@ -86,7 +86,7 @@ public class ItemController {
 
     Item beforeUpdateItem = BeanUtils.transform(Item.class, managedEntity);
 
-    //protect. only value,comment,lastModifiedBy can be modified
+    // protect. only value,comment,lastModifiedBy can be modified
     managedEntity.setValue(entity.getValue());
     managedEntity.setComment(entity.getComment());
     managedEntity.setDataChangeLastModifiedBy(entity.getDataChangeLastModifiedBy());
@@ -132,21 +132,23 @@ public class ItemController {
 
   @GetMapping("/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/items")
   public List<ItemDTO> findItems(@PathVariable("appId") String appId,
-                                 @PathVariable("clusterName") String clusterName,
-                                 @PathVariable("namespaceName") String namespaceName) {
-    return BeanUtils.batchTransform(ItemDTO.class, itemService.findItemsWithOrdered(appId, clusterName, namespaceName));
+      @PathVariable("clusterName") String clusterName,
+      @PathVariable("namespaceName") String namespaceName) {
+    return BeanUtils.batchTransform(ItemDTO.class,
+        itemService.findItemsWithOrdered(appId, clusterName, namespaceName));
   }
 
   @GetMapping("/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/items/deleted")
   public List<ItemDTO> findDeletedItems(@PathVariable("appId") String appId,
-                                        @PathVariable("clusterName") String clusterName,
-                                        @PathVariable("namespaceName") String namespaceName) {
+      @PathVariable("clusterName") String clusterName,
+      @PathVariable("namespaceName") String namespaceName) {
     List<Commit> commits = commitService.find(appId, clusterName, namespaceName, null);
     if (Objects.nonNull(commits)) {
-      List<Item> deletedItems = commits.stream()
-          .map(item -> ConfigChangeContentBuilder.convertJsonString(item.getChangeSets()).getDeleteItems())
-          .flatMap(Collection::stream)
-          .collect(Collectors.toList());
+      List<Item> deletedItems =
+          commits
+              .stream().map(item -> ConfigChangeContentBuilder
+                  .convertJsonString(item.getChangeSets()).getDeleteItems())
+              .flatMap(Collection::stream).collect(Collectors.toList());
       return BeanUtils.batchTransform(ItemDTO.class, deletedItems);
     }
     return Collections.emptyList();
@@ -163,8 +165,8 @@ public class ItemController {
 
   @GetMapping("/apps/{appId}/clusters/{clusterName}/namespaces/{namespaceName}/items/{key:.+}")
   public ItemDTO get(@PathVariable("appId") String appId,
-                     @PathVariable("clusterName") String clusterName,
-                     @PathVariable("namespaceName") String namespaceName, @PathVariable("key") String key) {
+      @PathVariable("clusterName") String clusterName,
+      @PathVariable("namespaceName") String namespaceName, @PathVariable("key") String key) {
     Item item = itemService.findOne(appId, clusterName, namespaceName, key);
     if (item == null) {
       throw new NotFoundException(
